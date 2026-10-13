@@ -1,0 +1,25 @@
+{
+  "name": "pglite-rag-demo",
+  "version": "0.1.0",
+  "description": "本地 RAG 检索问答：pglite + pgvector 做向量检索，OpenAI 兼容 LLM 做生成（纯 Node，无 Docker/GPU）",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "verify": "tsx verify-pgvector.ts",
+    "ingest": "tsx src/ingest.ts",
+    "ask": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.9",
+    "@electric-sql/pglite-pgvector": "^0.0.10",
+    "dotenv": "^18.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  }
+}
