@@ -1,6 +1,6 @@
 # PGlite RAG — 本地检索增强问答 Demo
 
-一个跑在 **Postgres-in-WASM（PGlite）** 上的最小 RAG（检索增强生成）问答系统：用 **pgvector** 做向量检索，OpenAI 兼容接口的 LLM 做生成。**纯 Node、无需 Docker / GPU**，普通电脑即可跑通「切片 → 向量入库 → 语义检索 → 带溯源回答」全链路。
+一个跑在 **Postgres-in-WASM（PGlite）** 上的 RAG + Agent 问答系统：用 **pgvector** 做向量检索，OpenAI 兼容接口的 LLM 做生成与工具调用（Function Calling）。**纯 Node、无需 Docker / GPU**，普通电脑即可跑通「切片 → 向量入库 → 语义检索 → Agent 工具调用 → 带溯源回答」全链路。
 
 > 附：作者对 PGlite 协议层的修复 [electric-sql/pglite#1123](https://github.com/electric-sql/pglite/pull/1123)（参数计数 16 位有符号溢出导致「参数 >32767 被静默丢弃」，已合并）。
 
@@ -9,6 +9,7 @@
 - 🗄️ **Postgres 生态**：复用 pglite（进程内 WASM Postgres）+ pgvector，无需独立向量库
 - 🔍 **向量检索**：HNSW 索引 + cosine 相似度，Top-K 召回
 - 🧩 **双模式**：真实语义（OpenAI 兼容 embedding + LLM）/ 离线 mock（无需任何 key 也能跑通全链路）
+- 🤖 **Agent 工具调用**：Function Calling 自主决策调用「知识库检索 / 只读 SQL」工具，ReAct 循环 + 多轮对话
 - 🔗 **可溯源**：回答带 `[编号]` 引用，指向命中的原始片段
 - 🧪 **可测试**：检索层用 vitest 离线验证
 - 🔌 **供应商无关**：换 embedding / LLM 供应商只改 `.env`，代码零改动
@@ -51,7 +52,9 @@ CHAT_MODEL=deepseek-ai/DeepSeek-V3
 
 ```bash
 npm run ingest                        # 读 corpus/ → 分块 → 向量入库（自动探测维度）
-npm run ask -- "退款政策是什么？"      # 提问
+npm run ask -- "退款政策是什么？"      # 纯 RAG 提问
+npm run ask:agent -- "退款政策是什么？" # Agent 模式（工具调用 + 多轮）
+npm run ask:agent                     # 交互式多轮对话（不带参数）
 ```
 
 ### 离线 mock 模式（无需任何 key）
@@ -76,8 +79,11 @@ src/
   embed.ts      # embedding（真实 / mock）
   retrieve.ts   # 入库 + cosine 检索
   generate.ts   # LLM 生成（真实 / mock）
+  tools.ts      # 工具注册表 + 执行器（知识库检索 / 只读 SQL）
+  agent.ts      # Agent 主循环（Function Calling + ReAct + 多轮）
+  ask.ts        # Agent CLI 入口（单次 / 交互式多轮）
   ingest.ts     # 语料入库
-  index.ts      # CLI 问答入口
+  index.ts      # 纯 RAG CLI 问答入口
   mock.ts       # 离线假向量 + 模板回答
 test/
   retrieve.test.ts

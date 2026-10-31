@@ -8,6 +8,7 @@
     "verify": "tsx verify-pgvector.ts",
     "ingest": "tsx src/ingest.ts",
     "ask": "tsx src/index.ts",
+    "ask:agent": "tsx src/ask.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
